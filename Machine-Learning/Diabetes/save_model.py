@@ -5,7 +5,7 @@ from evaluate import evaluate_models
 
 def save_best_model():
 
-    best_model, X_test, y_test = evaluate_models()
+    best_model, X_test, y_test,scaler = evaluate_models()
 
     joblib.dump(
         best_model,
@@ -13,6 +13,10 @@ def save_best_model():
     )
 
     print("\nBest Model Saved Successfully.")
-
+    joblib.dump(
+        scaler,
+        "Models/diabetes_scaler.pkl"
+    )
+    print("\nScaler Saved Successfully.")
 
 save_best_model()

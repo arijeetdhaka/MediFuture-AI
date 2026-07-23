@@ -17,7 +17,7 @@ def evaluate_models():
         random_model,
         knn_model,
         X_test,
-        y_test
+        y_test,scaler
 
     ) = train_models()
 
@@ -257,7 +257,7 @@ def evaluate_models():
 
         best_model,
         X_test,
-        y_test
+        y_test,scaler
 
     )
 

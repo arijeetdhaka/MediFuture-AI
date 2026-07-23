@@ -8,7 +8,7 @@ from sklearn.neighbors import KNeighborsClassifier
 
 def train_models():
 
-    X_train, X_test, y_train, y_test = preprocess_data()
+    X_train, X_test, y_train, y_test,scaler = preprocess_data()
 
 
     # Logistic Regression
@@ -41,7 +41,7 @@ def train_models():
         random_model,
         knn_model,
         X_test,
-        y_test
+        y_test,scaler
     )
 
 
