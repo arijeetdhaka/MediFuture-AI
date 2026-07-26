@@ -1,35 +1,56 @@
 import pandas as pd
 
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
 
 def preprocess_data():
 
-    df = pd.read_csv("Datasets/Kidney-Disease/kidney_disease.csv")
+    # Load dataset
+    df = pd.read_csv(
+        "Datasets/Kidney-Disease/kidney_disease.csv"
+    )
 
-    # Remove ID column
+    # Remove ID because it is not a medical feature
     if "id" in df.columns:
         df = df.drop("id", axis=1)
 
 
-    # Clean text values
-    df = df.replace({
-        "\t?": pd.NA,
-        "?": pd.NA,
-        "\tno": "no",
-        "\tyes": "yes",
-        " yes": "yes",
-        "\tnotckd": "notckd",
-        "ckd\t": "ckd"
-    })
+    # Clean spaces and tabs from text columns
+    for column in df.select_dtypes(include="object").columns:
+        df[column] = df[column].str.strip()
 
 
-    # Convert target into numbers
-    df["classification"] = df["classification"].replace({
+    # Replace ? with missing value
+    df = df.replace("?", pd.NA)
+
+
+    # -------------------------
+    # TARGET CLEANING
+    # -------------------------
+
+    df["classification"] = (
+        df["classification"]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+    )
+
+    # ckd = 1
+    # notckd = 0
+    df["classification"] = df["classification"].map({
         "ckd": 1,
         "notckd": 0
     })
+
+    # Remove rows having invalid/missing target
+    df = df.dropna(subset=["classification"])
+
+    # Force target to integer
+    df["classification"] = df["classification"].astype("int64")
 
 
     # Separate features and target
@@ -38,16 +59,82 @@ def preprocess_data():
     y = df["classification"]
 
 
-    # Convert categorical columns into numbers
-    X = pd.get_dummies(X, drop_first=True)
+    # Numerical columns
+    numeric_columns = [
+        "age",
+        "bp",
+        "sg",
+        "al",
+        "su",
+        "bgr",
+        "bu",
+        "sc",
+        "sod",
+        "pot",
+        "hemo",
+        "pcv",
+        "wc",
+        "rc"
+    ]
 
 
-    # Convert everything to numeric
-    X = X.apply(pd.to_numeric, errors="coerce")
+    # Convert numerical columns to actual numbers
+    for column in numeric_columns:
+
+        X[column] = pd.to_numeric(
+            X[column],
+            errors="coerce"
+        )
 
 
-    # Fill missing values using median
-    X = X.fillna(X.median())
+    # Everything else is categorical
+    categorical_columns = [
+        column
+        for column in X.columns
+        if column not in numeric_columns
+    ]
+
+
+    # Numerical preprocessing
+    numeric_pipeline = Pipeline([
+        (
+            "imputer",
+            SimpleImputer(strategy="median")
+        ),
+        (
+            "scaler",
+            StandardScaler()
+        )
+    ])
+
+
+    # Categorical preprocessing
+    categorical_pipeline = Pipeline([
+        (
+            "imputer",
+            SimpleImputer(strategy="most_frequent")
+        ),
+        (
+            "encoder",
+            OneHotEncoder(handle_unknown="ignore")
+        )
+    ])
+
+
+    # Apply different preprocessing to
+    # numerical and categorical columns
+    preprocessor = ColumnTransformer([
+        (
+            "numeric",
+            numeric_pipeline,
+            numeric_columns
+        ),
+        (
+            "categorical",
+            categorical_pipeline,
+            categorical_columns
+        )
+    ])
 
 
     # Split dataset
@@ -60,12 +147,18 @@ def preprocess_data():
     )
 
 
-    # Scaling
-    scaler = StandardScaler()
+    # Temporary checks
+    print("Target values:", y.unique())
+    print("Target dtype:", y.dtype)
 
-    X_train = scaler.fit_transform(X_train)
+    print("y_train values:", y_train.unique())
+    print("y_train dtype:", y_train.dtype)
 
-    X_test = scaler.transform(X_test)
 
-
-    return X_train, X_test, y_train, y_test, scaler
+    return (
+        X_train,
+        X_test,
+        y_train,
+        y_test,
+        preprocessor
+    )
