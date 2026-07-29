@@ -2,6 +2,7 @@
 
 ### Predict Today, Prevent Tomorrow
 
+
 MediFuture AI is an AI-powered healthcare project designed to predict multiple diseases using Machine Learning and eventually analyze a patient's current health information to estimate potential future health risks.
 
 The project combines multiple disease prediction models with a planned risk prediction engine, health score system, and AI assistant.
