@@ -7,30 +7,46 @@ def calculate_future_risk(
     hypertension
 ):
 
+    risk_score = 0
     risks = []
 
     if diabetes == 1:
-        risks.append("Increased Kidney Disease Risk")
-        risks.append("Increased Heart Disease Risk")
-        risks.append("Increased Stroke Risk")
+        risk_score += 20
+        risks.append("Higher risk of Kidney Disease")
+        risks.append("Higher risk of Heart Disease")
+        risks.append("Higher risk of Stroke")
 
     if hypertension == 1:
-        risks.append("Increased Heart Disease Risk")
-        risks.append("Increased Kidney Disease Risk")
-        risks.append("Increased Stroke Risk")
+        risk_score += 20
+        risks.append("Higher risk of Heart Disease")
+        risks.append("Higher risk of Kidney Disease")
+        risks.append("Higher risk of Stroke")
 
     if heart == 1:
-        risks.append("Increased Stroke Risk")
+        risk_score += 15
+        risks.append("Higher risk of Stroke")
 
     if kidney == 1:
-        risks.append("Increased Heart Disease Risk")
+        risk_score += 15
+        risks.append("Higher risk of Heart Disease")
 
     if liver == 1:
-        risks.append("Liver Health Requires Attention")
+        risk_score += 10
+        risks.append("Liver health requires monitoring")
 
     if stroke == 1:
-        risks.append("Cardiovascular Health Requires Attention")
+        risk_score += 20
+        risks.append("Cardiovascular health requires monitoring")
 
     risks = list(set(risks))
 
-    return risks
+    if risk_score >= 60:
+        level = "HIGH"
+
+    elif risk_score >= 30:
+        level = "MODERATE"
+
+    else:
+        level = "LOW"
+
+    return risk_score, level, risks
